@@ -140,7 +140,7 @@ def list_rooms(student_id):
             <h1>CAMPUS</h1>
             %for r in rooms:
                 <p>
-                <a href="https://1-dot-asint-151811.appspot.com/init/student/listrooms/{{student_id}}/{{r.id}}"> {{r.name}} </a>
+                <a href="https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}/{{r.id}}"> {{r.name}} </a>
                 </p>
             % end
             <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';" />
@@ -233,7 +233,15 @@ def admin():
     infoFromJson = json.loads(response.read())
     print infoFromJson
     # Display retrieved list of Campus in an HTML page. Each
-
+    temp1="""
+    <h1>CAMPUS</h1>
+    %for campus in json:
+        <p>
+        <a href="https://1-dot-asint-151811.appspot.com/init/admin/search/{{campus["id"]}}"> {{campus["name"]}} </a>
+        </p>
+    % end
+    <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';" />
+    """
     # print json2html.convert(json=infoFromJson)
     return template(temp1, json=infoFromJson)
 
