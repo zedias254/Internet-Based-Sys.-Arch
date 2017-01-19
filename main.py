@@ -35,21 +35,24 @@ def init():
    		 <h1> </h1>
 		<head>
 		<style>
-		.wrapper {text-align: center;}
+		.wrapper {text-align: center;
+
 		</style>
 		</head>
-		<div class="wrapper">
-			<img src="http://users.isr.ist.utl.pt/~jmessias/content/img/IST_A_RGB_POS.jpg" alt="LogoIST" style="width:105px;height:41px;">
-			<h2>Project for Internet Based Systems Architecture<h2/>
-			<h3>Developed by: Ricardo S. Miranda [75757] & Jose M.Dias [75847] </h3>
-			<p class="main1">An administrator can add rooms for students to occupy and check their occupancy.</p>
-			<p class="main2">A student can occupy any of the available rooms by checking in and checking out when leaving.</p>
-			<p> </p>
-			<p class="main3"> You are:
-			<input class="button" type="button" value="Administrator" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
-			<input class="button"type="button" value="Student" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/register/';" />
-        	</p>
-        </div>
+		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
+            <div class="wrapper">
+                <img src="https://upload.wikimedia.org/wikipedia/en/2/20/Instituto_Superior_T%C3%A9cnico_logo.png" alt="LogoIST" style="width:130px;height:55px;">
+                <h2>Project for Internet Based Systems Architecture<h2/>
+                <h3>Developed by: Ricardo S. Miranda [75757] & Jose M.Dias [75847] </h3>
+                <p class="main1">An administrator can add rooms for students to occupy and check their occupancy.</p>
+                <p class="main2">A student can occupy any of the available rooms by checking in and checking out when leaving.</p>
+                <p> </p>
+                <p class="main3"> You are:
+                <input class="button" type="button" value="Administrator" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
+                <input class="button"type="button" value="Student" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/register/';" />
+                </p>
+            </div>
+        </body>
     """
     # print json2html.convert(json=infoFromJson)
     return template(temp1)
@@ -106,12 +109,14 @@ def admin():
         <div id="list_rooms" class="wrapper">
             <script>document.getElementById('list_rooms').style.display = "none";</script>
             <h3>List of available rooms</h3>
-
             <br>
         <p id="rooms" class="wrapper">
-        <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';">Back</button>
+            <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';">Back</button>
         </div>
         <div id="metric_results" class="wrapper">
+        </div>
+        <div class="wrapper">
+            <p id="error"></p>
         </div>
         </body>
         <script>
@@ -133,8 +138,9 @@ def admin():
                         var response_json = xmlHttp.responseText;
                         list_of_rooms = JSON.parse(response_json);
                         var str = "";
-                        if(list_of_rooms["containedRooms"] == []){
+                        if(list_of_rooms["containedRooms"].length == 0){
                             str = "<b>No rooms</b> available";
+                            document.getElementById('error').innerHTML = str;
                         } else{
 
                             var myTableDiv = document.getElementById("metric_results");
@@ -202,8 +208,21 @@ def list_rooms(user_id):
                 array.append({"name" : r.name,"id" : r.id,"count" : students.count()})
             ret = {"containedRooms": array}
         return json.dumps(ret, sort_keys=True)
-    elif :
-        return "Userid not 0"
+    else:
+        find_user = StudentS.query(StudentS.id == int(user_id)).count()
+        if (find_user):
+            rooms = RoomR.query().fetch()
+            if not rooms:
+                ret = {"containedRooms":[]}
+            else:
+                array = []
+                for r in rooms:
+                    array.append({"name": r.name, "id": r.id})
+                ret = {"containedRooms": array}
+        else:
+            ret = {"ErrorCode": "User ID not found!"}
+
+    return json.dumps(ret, sort_keys=True)
 
 # STUDENT REGISTER PAGE
 @bottle.get('/init/student/register/')
@@ -213,18 +232,40 @@ def student():
 		<head>
 		<style>
 		.wrapper {text-align: center;}
+		input[type=text] {
+                        width: 60%;
+                        padding: 12px 20px;
+                        margin: 8px 0;
+                        box-sizing: border-box;
+                    }
+                    input[type=button] {
+                        width: 20%;
+                        background-color: #4CAF50;
+                        color: white;
+                        padding: 14px 20px;
+                        margin: 8px 0;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    input[type=button]:hover {
+                        background-color: #45a049;
+                    }
 		</style>
 		</head>
+		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
 		<div class="wrapper">
 			<h3>First, enter your username:</h3>
 			<form action="/init/student/register/" method="post">
 				Name: <input type="text" name="username"><br>
+				<br>
 				<button type="submit">Submit</button>
 			</form>
-			<p> </p>
+            <br>
 			<button type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
-			<p>Under construction...</p>
+		    <br>
 		</div>
+		</body>
     """
     return template(temp1)
 
@@ -312,6 +353,23 @@ def list_rooms(student_id):
                         display: table;
                         margin: 0 auto;
                     }
+
+                    table {
+                    margin-left: auto;
+                    margin-right: auto;
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 50%;
+                    }
+                    td, th {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #dddddd;
+                    }
+
                     input[type=text] {
                         width: 60%;
                         padding: 12px 20px;
@@ -333,16 +391,67 @@ def list_rooms(student_id):
                     }
                 </style>
             </head>
-            <div class="wrapper">
+            <div id="metric_results" class="wrapper">
                 <h3>List of available rooms:</h3>
-                %for r in rooms:
-                    <p>
-                    <a href="https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}/{{r.id}}"> {{r.name}} </a>
-                    </p>
-                % end
-                <p></p>
-                <button id="b_search_friend" onclick="Show_form()">Search a friend</button>
+                <script>
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = function() {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                            var response_json = xmlHttp.responseText;
+                            list_of_rooms = JSON.parse(response_json);
+                            var str = "";
+                            if(list_of_rooms["ErrorCode"]){
+                                str = "<b>UserID does not exist</b>";
+                                document.getElementById('error2').innerHTML = str;
+                            }else if(list_of_rooms["containedRooms"].length == 0){
+                                str = "<b>No rooms</b> available";
+                                document.getElementById('error2').innerHTML = str;
+                            } else{
+
+                                var myTableDiv = document.getElementById("metric_results");
+                                var table = document.createElement('TABLE');
+                                var tableBody = document.createElement('TBODY');
+
+                                table.border = '1';
+                                table.appendChild(tableBody);
+
+                                var heading = new Array();
+                                heading[0] = "Room Name"
+                                //TABLE COLUMNS
+                                var tr = document.createElement('TR');
+                                tableBody.appendChild(tr);
+
+                                for (i = 0; i < heading.length; i++) {
+                                    var th = document.createElement('TH')
+                                    th.width = '75';
+                                    th.appendChild(document.createTextNode(heading[i]));
+                                    tr.appendChild(th);
+                                }
+
+                                for(var i = 0; i < list_of_rooms["containedRooms"].length; i++) {
+                                     var obj = list_of_rooms["containedRooms"][i];
+                                     var tr = document.createElement('TR');
+                                    var tdname = document.createElement('TD');
+                                     var link = document.createElement("A");
+                                    link.setAttribute('href','https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}/'+obj.id);
+                                    link.text=obj.name;
+                                    tdname.appendChild(link);
+                                    tr.appendChild(tdname);
+                                    tableBody.appendChild(tr);
+                                }
+                                 myTableDiv.appendChild(table);
+                            }
+                        }
+                    }
+                        xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/listrooms/{{student_id}}", true);
+                            xmlHttp.send(null);
+                </script>
+                <br>
+                <p id="error2"></p>
+            </div>
+            <div class="wrapper">
                 <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
+                <button id="b_search_friend" onclick="Show_form()">Search a friend</button>
             </div>
             <div class="wrapper2" id="div_form">
                 <script>document.getElementById('div_form').style.display = "none";</script>
@@ -352,7 +461,7 @@ def list_rooms(student_id):
                     </form>
                     <input type="button" id="b_submit" value="Search" onclick="Search_friend()"/>
                     <p id="friend_room"></p>
-                    <p id="debug"></p>
+                    <p id="error"></p>
             </div>
 
             <script>
@@ -382,6 +491,10 @@ def list_rooms(student_id):
                     xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/student/"+String(friend_username.elements[0].value)+"/room", true);
                     xmlHttp.send(null);
                 }
+
+
+
+
             </script>
             """
 
@@ -393,7 +506,7 @@ def list_rooms(student_id):
             <p>Error! ID not found. </p>
         """
 
-    return template(ret, rooms=rooms, student_id=student_id)
+    return template(ret, student_id=student_id)
 
 
 # FIND A FRIEND METHOD
@@ -413,10 +526,9 @@ def search_friend(friend_username):
             # ret = str(friend_room_name)
     return ret
 
-
 # CHECK IN | CHECK OUT PAGE
 @bottle.route('/init/student/<student_id>/<room_id>')
-def list_rooms(student_id, room_id):
+def check_room(student_id, room_id):
     students = StudentS.query(StudentS.room_id == int(room_id)).fetch()
     q_current_room = RoomR.query(RoomR.id == str(room_id)).fetch(1)[0]
     room_name = q_current_room.name
@@ -424,14 +536,82 @@ def list_rooms(student_id, room_id):
     ret = """
         <head>
 		<style>
-		.wrapper {text-align: center;}
+		    .wrapper {text-align: center;}
+		    table {
+                    margin-left: auto;
+                    margin-right: auto;
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 20%;
+                }
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
 		</style>
 		</head>
-        <div class="wrapper">
-			<h3>List of students in room {{room_name}}</h3>
-			%for s in students:
-                <li>{{s.username}}</li>
-            % end
+        <div id="metric_results" class="wrapper">
+            <h3>List of students in room {{room_name}}</h3>
+            <p id="error"></p>
+            <script>
+
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function() {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                        var response_json = xmlHttp.responseText;
+                        list_of_students = JSON.parse(response_json);
+                        var str = "";
+                        if(list_of_students["ErrorCode"]){
+                            str = "Room ID <b>not found!</b>";
+                            document.getElementById('error').innerHTML = str;
+                        }else if(list_of_students["containedStudents"].length == 0){
+                            str = "This room is <b>empty</b>";
+                            document.getElementById('error').innerHTML = str;
+                        } else{
+
+                            var myTableDiv = document.getElementById("metric_results");
+                            var table = document.createElement('TABLE');
+                            var tableBody = document.createElement('TBODY');
+
+                            table.border = '1';
+                            table.appendChild(tableBody);
+
+                            var heading = new Array();
+                            heading[0] = "Students' Name"
+
+                            //TABLE COLUMNS
+                            var tr = document.createElement('TR');
+                            tableBody.appendChild(tr);
+                            for (i = 0; i < heading.length; i++) {
+                                var th = document.createElement('TH')
+                                th.width = '75';
+                                th.appendChild(document.createTextNode(heading[i]));
+                                tr.appendChild(th);
+                            }
+
+                            for(var i = 0; i < list_of_students["containedStudents"].length; i++) {
+                                 var obj = list_of_students["containedStudents"][i];
+                                 var tr = document.createElement('TR');
+                                var tdname = document.createElement('TD');
+                                tdname.appendChild(document.createTextNode(obj.name));
+                                 tr.appendChild(tdname);
+                                tableBody.appendChild(tr);
+
+                            }
+                             myTableDiv.appendChild(table);
+                        }
+                    }
+                }
+                xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/liststudents/{{room_id}}", true);
+                xmlHttp.send(null);
+
+            </script>
+
+
 			<button id="b_checkin" onclick="CheckIn()">Check In</button>
 			<button id="b_checkout" onclick="CheckOut()">Check Out</button>
             <input type="button" value="Back" onclick="window.history.back()"/>
@@ -454,17 +634,36 @@ def list_rooms(student_id, room_id):
                 document.getElementById("b_checkout").style.visibility="hidden";
                 document.getElementById("b_checkin").style.visibility="visible";
             }
+
+
+
         </script>
     """
     return template(ret, student_id=student_id, room_id=room_id, students=students, room_name=room_name)
 
+@bottle.get('/init/liststudents/<room_id>')
+def list_students(room_id):
+    rooms = RoomR.query(RoomR.id == room_id).fetch()
+    if not rooms:
+        ret = {"ErrorCode": "RoomID not found"}
+    else:
+        students = StudentS.query(StudentS.room_id == int(room_id)).fetch()
+        if not students:
+            ret = {"containedStudents":[]}
+        else :
+            array =[]
+            for s in students:
+                array.append({"name" : s.username,"id" : s.id})
+            ret = {"containedStudents": array}
+
+    return json.dumps(ret, sort_keys=True)
 
 # CHECK IN | CHECK OUT METHOD
 @bottle.post('/init/student/<student_id>/<room_id>/<in_or_out>')
 def check_in_or_out(student_id, room_id, in_or_out):
     student = StudentS.query(StudentS.id == int(student_id)).fetch(1)[0]
     if in_or_out == 'out':
-        if room_id == student.room_id:
+        if room_id == str(student.room_id):
             student.room_id = None
             student.put()
     elif in_or_out == 'in':
@@ -522,7 +721,6 @@ def search(room_id):
 
     return template(temp, json=response_json)
 
-
 # ADD A ROOM METHOD
 @bottle.post('/init/admin/search/addroom')
 def add_room():
@@ -538,7 +736,6 @@ def add_room():
     ret = template(temp1, data=data)
 
     return ret
-
 
 # ROOM OCCUPANCY PAGE FOR ADMIN
 @bottle.get('/init/admin/occupation/<room_id>')
@@ -573,6 +770,20 @@ def room_occupation(room_id):
 
         <div class="wrapper">
 			<h3>List of students in room {{room_name}}</h3>
+			 <br>
+			 <p id="error"></p>
+	    </div>
+
+
+		<div id="tabela" class="wrapper">
+			% if not students:
+			    <script>document.getElementById('tabela').style.visibility = "hidden";
+			        document.getElementById('error').innerHTML = "This room is empty!";
+			    </script>
+
+			% else:
+			   <script>document.getElementById('tabela').style.visibility = "visible";</script>
+			% end
 			<table>
                 <tr>
                     <th>Students' Name</th>
@@ -584,11 +795,13 @@ def room_occupation(room_id):
                 % end
             </table>
             <br>
-            <input type="button" value="Back" onclick="window.history.back()" />
+
+        </div>
+        <div class="wrapper">
+        <input type="button" value="Back" onclick="window.history.back()" />
         </div>
     """
     return template(ret, room_id=room_id, students=students, room_name=room_name)
-
 
 # SHOW THE DATABASE
 @bottle.route('/showall')
