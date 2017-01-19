@@ -10,24 +10,25 @@ debug(True)
 # Create the Bottle WSGI application.
 bottle = Bottle()
 
+
 class MessageM(ndb.Model):
     """Models an individual Guestbook entry with content and date."""
     content = ndb.StringProperty()
     date = ndb.DateTimeProperty(auto_now_add=True)
 
+
 class StudentS(ndb.Model):
     username = ndb.StringProperty()
     id = ndb.IntegerProperty()
     room_id = ndb.IntegerProperty()
+
+
 class RoomR(ndb.Model):
     name = ndb.StringProperty()
-    id =  ndb.StringProperty()
-
-# students = ndb.StructuredProperty(, repeated=True)
+    id = ndb.StringProperty()
 
 
-# Note: We don't need to call run() since our application is embedded within
-# the App Engine WSGI application server.
+# HOMEPAGE
 @bottle.route('/init/')
 def init():
     temp1 = """
@@ -49,11 +50,162 @@ def init():
 			<input class="button"type="button" value="Student" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/register/';" />
         	</p>
         </div>
-
     """
     # print json2html.convert(json=infoFromJson)
     return template(temp1)
 
+
+# ADMIN HOMEPAGE
+@bottle.route('/init/admin/')
+def admin():
+    response = urllib2.urlopen(
+        'https://fenix.tecnico.ulisboa.pt/api/fenix/v1/spaces')  # Request list of campus using Tecnico API
+    infoFromJson = json.loads(response.read())
+    rooms = RoomR.query().fetch()
+    temp1 = """
+        <head>
+            <style>
+                .wrapper {
+                    text-align: center;
+                }
+                table {
+                    margin-left: auto;
+                    margin-right: auto;
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 50%;
+                }
+                td, th {
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                    padding: 8px;
+                }
+                tr:nth-child(even) {
+                    background-color: #dddddd;
+                }
+            </style>
+        </head>
+        <body>
+        <div id="add" class="wrapper">
+            <script>document.getElementById('add').style.display = "none";</script>
+            <h1>CAMPUS</h1>
+            %for campus in json:
+                <p>
+                <a href="https://1-dot-asint-151811.appspot.com/init/admin/search/{{campus["id"]}}"> {{campus["name"]}} </a>
+                </p>
+            % end
+            <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
+        </div>
+
+        <div id="choice" class="wrapper">
+            <h1>ADMIN</h1>
+            <button id="add_room" >Add a room</button>
+            <button id="view_room" onclick="l_rooms()">Room Occupancy</button>
+        </div>
+
+        <div id="list_rooms" class="wrapper">
+            <script>document.getElementById('list_rooms').style.display = "none";</script>
+            <h3>List of available rooms</h3>
+
+            <br>
+        <p id="rooms" class="wrapper">
+        <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';">Back</button>
+        </div>
+        <div id="metric_results" class="wrapper">
+        </div>
+        </body>
+        <script>
+            document.getElementById('add_room').onclick = function() {
+                document.getElementById('list_rooms').style.display = "none";
+                document.getElementById('choice').style.display = "none";
+                document.getElementById('add').style.display = "block";
+            };
+            function l_rooms() {
+
+
+                document.getElementById('list_rooms').style.display = "block";
+                document.getElementById('choice').style.display = "none";
+                document.getElementById('add').style.display = "none";
+
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function() {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                        var response_json = xmlHttp.responseText;
+                        list_of_rooms = JSON.parse(response_json);
+                        var str = "";
+                        if(list_of_rooms["containedRooms"] == []){
+                            str = "<b>No rooms</b> available";
+                        } else{
+
+                            var myTableDiv = document.getElementById("metric_results");
+                            var table = document.createElement('TABLE');
+                            var tableBody = document.createElement('TBODY');
+
+                            table.border = '1';
+                            table.appendChild(tableBody);
+
+                            var heading = new Array();
+                            heading[0] = "Room Name"
+                            heading[1] = "Occupancy"
+
+                            //TABLE COLUMNS
+                            var tr = document.createElement('TR');
+                            tableBody.appendChild(tr);
+                            for (i = 0; i < heading.length; i++) {
+                                var th = document.createElement('TH')
+                                th.width = '75';
+                                th.appendChild(document.createTextNode(heading[i]));
+                                tr.appendChild(th);
+                            }
+
+                            for(var i = 0; i < list_of_rooms["containedRooms"].length; i++) {
+                                 var obj = list_of_rooms["containedRooms"][i];
+                                 var tr = document.createElement('TR');
+                                var tdname = document.createElement('TD');
+                                 var link = document.createElement("A");
+                                link.setAttribute('href','https://1-dot-asint-151811.appspot.com/init/admin/occupation/'+obj.id);
+                                link.text=obj.name;
+                                tdname.appendChild(link);
+                                tr.appendChild(tdname);
+
+                                var tdcount = document.createElement('TD');
+                                tdcount.appendChild(document.createTextNode(obj.count));
+                                 tr.appendChild(tdcount);
+                                tableBody.appendChild(tr);
+
+                            }
+                             myTableDiv.appendChild(table);
+
+
+                        }
+                    }
+                }
+                xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/listrooms/0", true);
+                xmlHttp.send(null);
+
+            }
+        </script>
+    """
+
+    return template(temp1, json=infoFromJson, rooms=rooms, StudentS=StudentS)
+
+@bottle.get('/init/listrooms/<user_id>')
+def list_rooms(user_id):
+    if user_id is '0':
+        rooms = RoomR.query().fetch()
+        if not rooms:
+            ret = {"containedRooms":[]}
+        else :
+            array =[]
+            for r in rooms:
+                students = StudentS.query(StudentS.room_id == int(r.id))
+                array.append({"name" : r.name,"id" : r.id,"count" : students.count()})
+            ret = {"containedRooms": array}
+        return json.dumps(ret, sort_keys=True)
+    elif :
+        return "Userid not 0"
+
+# STUDENT REGISTER PAGE
 @bottle.get('/init/student/register/')
 def student():
     temp1 = """
@@ -68,16 +220,16 @@ def student():
 			<form action="/init/student/register/" method="post">
 				Name: <input type="text" name="username"><br>
 				<button type="submit">Submit</button>
-
 			</form>
 			<p> </p>
 			<button type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
 			<p>Under construction...</p>
 		</div>
     """
-    # print json2html.convert(json=infoFromJson)
     return template(temp1)
 
+
+# STUDENT REGISTER RESULT PAGE
 @bottle.post('/init/student/register/')
 def register():
     username = request.forms.get('username')
@@ -90,15 +242,14 @@ def register():
         return ret
     else:
         number = StudentS.query().count()
-        #students = StudentS.query()
-        #s_len = students.fetch()
+        # students = StudentS.query()
+        # s_len = students.fetch()
 
-        new_id = number+1
+        new_id = number + 1
         s = StudentS(username=username, id=new_id)
         key = s.put()
 
-
-        temp1="""
+        temp1 = """
         	<h1> </h1>
         	<head>
         	<style>
@@ -125,14 +276,16 @@ def register():
         # key = m.put()
         # return " x"
         # return 'Message %s added with key %s' %(name, str(key.id()))
-        ret = template(temp1, username=username,new_id=new_id)
+        ret = template(temp1, username=username, new_id=new_id)
         return ret
 
+
+# STUDENTS HOMEPAGE
 @bottle.route('/init/student/<student_id>')
 def list_rooms(student_id):
-    find_id = StudentS.query(StudentS.id==int(student_id)).count()
+    find_id = StudentS.query(StudentS.id == int(student_id)).count()
     if find_id:
-        student = StudentS.query(StudentS.id==int(student_id)).fetch()
+        student = StudentS.query(StudentS.id == int(student_id)).fetch()
         for s in student:
             student_name = s.username
         ret = "You're logged as " + student_name
@@ -149,7 +302,6 @@ def list_rooms(student_id):
                         padding: 20px;
                         display: table;
                         margin: 0 auto;
-
                     }
                     .wrapper2 {
                         text-align: center;
@@ -176,12 +328,9 @@ def list_rooms(student_id):
                         border-radius: 4px;
                         cursor: pointer;
                     }
-
                     input[type=button]:hover {
                         background-color: #45a049;
                     }
-
-
                 </style>
             </head>
             <div class="wrapper">
@@ -206,7 +355,6 @@ def list_rooms(student_id):
                     <p id="debug"></p>
             </div>
 
-
             <script>
                 function Show_form() {
                     document.getElementById('div_form').style.display = "table";
@@ -215,7 +363,6 @@ def list_rooms(student_id):
 
                 function Search_friend() {
                     var friend_username = document.getElementById("form_friend");
-                    document.getElementById("debug").innerHTML = String(friend_username.elements[0].value);
 
                     var xmlHttp = new XMLHttpRequest();
                     xmlHttp.onreadystatechange = function() {
@@ -231,45 +378,46 @@ def list_rooms(student_id):
                             }
                             document.getElementById("friend_room").innerHTML = (str);
                         }
-
                     }
                     xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/student/"+String(friend_username.elements[0].value)+"/room", true);
                     xmlHttp.send(null);
-
                 }
             </script>
             """
 
 
-      # for r in rooms:
-       #     ret += "      " + r.name + "       " + r.id + "<br>"
+        # for r in rooms:
+        #     ret += "      " + r.name + "       " + r.id + "<br>"
     else:
         ret = """
-            <p>ID not found! </p>
+            <p>Error! ID not found. </p>
         """
 
     return template(ret, rooms=rooms, student_id=student_id)
 
+
+# FIND A FRIEND METHOD
 @bottle.get('/init/student/<friend_username>/room')
 def search_friend(friend_username):
     friend = StudentS.query(StudentS.username == friend_username).fetch(1)
     if not friend:
         ret = json.dumps({"ErrorCode": "NOUSERFOUND", "Room": ""}, sort_keys=True)
-        #ret = "NOTFOUND"  # Friend does not exist
+        # ret = "NOTFOUND"  # Friend does not exist
     else:
         if (friend[0].room_id is None):
             ret = json.dumps({"ErrorCode": "NULL", "Room": ""}, sort_keys=True)
-            #ret = ""
+            # ret = ""
         else:
             friend_room_name = RoomR.query(RoomR.id == str(friend[0].room_id).decode("utf-8")).fetch(1)[0].name
             ret = json.dumps({"ErrorCode": "", "Room": friend_room_name}, sort_keys=True)
-            #ret = str(friend_room_name)
+            # ret = str(friend_room_name)
     return ret
 
+
+# CHECK IN | CHECK OUT PAGE
 @bottle.route('/init/student/<student_id>/<room_id>')
 def list_rooms(student_id, room_id):
-    students = StudentS.query(StudentS.room_id==int(room_id)).fetch()
-    room_name = "coisa qq"
+    students = StudentS.query(StudentS.room_id == int(room_id)).fetch()
     q_current_room = RoomR.query(RoomR.id == str(room_id)).fetch(1)[0]
     room_name = q_current_room.name
 
@@ -286,10 +434,9 @@ def list_rooms(student_id, room_id):
             % end
 			<button id="b_checkin" onclick="CheckIn()">Check In</button>
 			<button id="b_checkout" onclick="CheckOut()">Check Out</button>
-            <input type="button" value="Back" onclick="window.history.back()" />
+            <input type="button" value="Back" onclick="window.history.back()"/>
             <p id="check"></p>
         </div>
-
         <script>
             function CheckIn() {
                 var xhttp = new XMLHttpRequest();
@@ -299,7 +446,6 @@ def list_rooms(student_id, room_id):
                 document.getElementById("b_checkin").style.visibility="hidden";
                 document.getElementById("b_checkout").style.visibility="visible";
             }
-
             function CheckOut() {
                 var xhttp = new XMLHttpRequest();
                 xhttp.open("POST", "/init/student/{{student_id}}/{{room_id}}/out", true);
@@ -309,39 +455,25 @@ def list_rooms(student_id, room_id):
                 document.getElementById("b_checkin").style.visibility="visible";
             }
         </script>
-                """
+    """
     return template(ret, student_id=student_id, room_id=room_id, students=students, room_name=room_name)
 
+
+# CHECK IN | CHECK OUT METHOD
 @bottle.post('/init/student/<student_id>/<room_id>/<in_or_out>')
 def check_in_or_out(student_id, room_id, in_or_out):
     student = StudentS.query(StudentS.id == int(student_id)).fetch(1)[0]
     if in_or_out == 'out':
-        student.room_id = None
-        student.put()
+        if room_id == student.room_id:
+            student.room_id = None
+            student.put()
     elif in_or_out == 'in':
         student.room_id = int(room_id)
         student.put()
     return
 
-@bottle.route('/init/admin/')
-def admin():
-    response = urllib2.urlopen(
-        'https://fenix.tecnico.ulisboa.pt/api/fenix/v1/spaces')  # Request list of campus using Tecnico API
-    infoFromJson = json.loads(response.read())
-    print infoFromJson
-    # Display retrieved list of Campus in an HTML page. Each
-    temp1="""
-    <h1>CAMPUS</h1>
-    %for campus in json:
-        <p>
-        <a href="https://1-dot-asint-151811.appspot.com/init/admin/search/{{campus["id"]}}"> {{campus["name"]}} </a>
-        </p>
-    % end
-    <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';" />
-    """
-    # print json2html.convert(json=infoFromJson)
-    return template(temp1, json=infoFromJson)
 
+# ROOM PAGE FOR ADMIN
 @bottle.get('/init/admin/search/<room_id>')
 def search(room_id):
     print "Room ID: " + room_id
@@ -364,7 +496,6 @@ def search(room_id):
             <input type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" value="Go to Admin Homepage"/>
             <p id="check"></p>
         </div>
-
         <script>
             function add_room(){
                 var xhttp = new XMLHttpRequest();
@@ -374,7 +505,7 @@ def search(room_id):
                 document.getElementById("check").innerHTML = "Added! Students can now occupy room <b>{{json["name"]}}</b>."
             }
         </script>
-        """
+    """
 
     else:
         temp = """
@@ -387,15 +518,17 @@ def search(room_id):
             </li>
         % end
         <input type="button" value="Back" onclick="window.history.back()" />
-        """
+    """
 
     return template(temp, json=response_json)
 
+
+# ADD A ROOM METHOD
 @bottle.post('/init/admin/search/addroom')
 def add_room():
     data = request.json
-    #response = urllib2.urlopen('https://1-dot-asint-151811.appspot.com/init/admin/search/<room_id>' + room_id)
-    #response_json = json.loads(response.read())
+    # response = urllib2.urlopen('https://1-dot-asint-151811.appspot.com/init/admin/search/<room_id>' + room_id)
+    # response_json = json.loads(response.read())
 
     r = RoomR(name=data['name'], id=data['id'])
     key = r.put()
@@ -404,9 +537,60 @@ def add_room():
     		"""
     ret = template(temp1, data=data)
 
-
     return ret
 
+
+# ROOM OCCUPANCY PAGE FOR ADMIN
+@bottle.get('/init/admin/occupation/<room_id>')
+def room_occupation(room_id):
+    students = StudentS.query(StudentS.room_id == int(room_id)).fetch()
+    q_current_room = RoomR.query(RoomR.id == str(room_id)).fetch(1)[0]
+    room_name = q_current_room.name
+
+    ret = """
+        <head>
+            <style>
+                .wrapper {
+                    text-align: center;
+                }
+                table {
+                    font-family: arial, sans-serif;
+                    margin-left: auto;
+                    margin-right: auto;
+                    border-collapse: collapse;
+                    width: 20%;
+                }
+                td, th {
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                    padding: 8px;
+                }
+                tr:nth-child(even) {
+                    background-color: #dddddd;
+                }
+            </style>
+        </head>
+
+        <div class="wrapper">
+			<h3>List of students in room {{room_name}}</h3>
+			<table>
+                <tr>
+                    <th>Students' Name</th>
+                </tr>
+                %for s in students:
+                    <tr>
+                        <td>{{s.username}}</td>
+                    </tr>
+                % end
+            </table>
+            <br>
+            <input type="button" value="Back" onclick="window.history.back()" />
+        </div>
+    """
+    return template(ret, room_id=room_id, students=students, room_name=room_name)
+
+
+# SHOW THE DATABASE
 @bottle.route('/showall')
 def showall():
     ret = ""
@@ -418,8 +602,9 @@ def showall():
     for s in stds:
         ret += str(s.key.id()) + "    " + s.username + "<br>"
     for r in rooms:
-        ret += str(r.key.id()) + "    " + r.name + "       " + r.id +"<br>"
+        ret += str(r.key.id()) + "    " + r.name + "       " + r.id + "<br>"
     return ret
+
 
 @bottle.route('/showsome/<start:int>/<end:int>')
 def showsome(start, end):
@@ -429,10 +614,11 @@ def showsome(start, end):
         ret += str(m.key.id()) + "    " + m.content + "     " + str(m.date) + "<br>"
     return ret
 
+
 @bottle.route('/showexact/<string>')
 def showexact(string):
     ret = ""
-    msgs = MessageM.query(Message.content == string)
+    msgs = MessageM.query(MessageM.content == string)
     for m in msgs:
         ret += str(m.key.id()) + "    " + m.content + "     " + str(m.date) + "<br>"
     return ret
