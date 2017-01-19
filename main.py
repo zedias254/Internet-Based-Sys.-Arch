@@ -70,6 +70,7 @@ def student():
 				<button type="submit">Submit</button>
 
 			</form>
+			<p> </p>
 			<button type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
 			<p>Under construction...</p>
 		</div>
@@ -92,27 +93,25 @@ def register():
         #students = StudentS.query()
         #s_len = students.fetch()
 
-        s = StudentS(username=username, id=(number+1))
+        new_id = number+1
+        s = StudentS(username=username, id=new_id)
         key = s.put()
-        temp1 = """
-		<p>Current length of students' list: {{number}}, 1st query: {{query}}, key added: {{key}}</p>
-		"""
-        ret = template(temp1, number=number, query=query, key=key)
-        return ret
-        # temp1="""
-        # 	'''<h1> </h1>
-        # 	<head>
-        # 	<style>
-        # 	.wrapper {text-align: center;}
-        # 	</style>
-        # 	</head>
-        # 	<div class="wrapper">
-        # 		<h3>Welcome {{username}} </h3>
-        # 		<p> Your ID is (not implemented yet). You can see the available rooms in the button below.
-        # 		<input type="button" value="See available rooms" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}';" />
-        # 		<p>Under construction...</p>
-        # 	</div>'''
-        # """
+
+
+        temp1="""
+        	<h1> </h1>
+        	<head>
+        	<style>
+        	.wrapper {text-align: center;}
+        	</style>
+        	</head>
+        	<div class="wrapper">
+        		<h3>Welcome {{username}} </h3>
+                <p>Your ID is {{new_id}}. You can see the available rooms in the button below.
+        		<button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/{{new_id}}';"> See available rooms</button>
+        		<p>Under construction...</p>
+        	</div>'''
+        """
 
         # payload = {'name': 'value'}
         # r = requests.post(url, data=payload)
@@ -126,6 +125,8 @@ def register():
         # key = m.put()
         # return " x"
         # return 'Message %s added with key %s' %(name, str(key.id()))
+        ret = template(temp1, username=username,new_id=new_id)
+        return ret
 
 @bottle.route('/init/student/<student_id>')
 def list_rooms(student_id):
@@ -137,13 +138,106 @@ def list_rooms(student_id):
         ret = "You're logged as " + student_name
         rooms = RoomR.query().fetch()
         ret = """
-            <h1>CAMPUS</h1>
-            %for r in rooms:
-                <p>
-                <a href="https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}/{{r.id}}"> {{r.name}} </a>
-                </p>
-            % end
-            <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';" />
+            <h1> </h1>
+            <head>
+                <style>
+                    .wrapper {
+                        text-align: center;
+                        width:1200px;
+                        border-radius: 5px;
+                        background-color: #f2f2f2;
+                        padding: 20px;
+                        display: table;
+                        margin: 0 auto;
+
+                    }
+                    .wrapper2 {
+                        text-align: center;
+                        width:400px;
+                        border-radius: 5px;
+                        background-color: #e2e2e2;
+                        padding: 20px;
+                        display: table;
+                        margin: 0 auto;
+                    }
+                    input[type=text] {
+                        width: 60%;
+                        padding: 12px 20px;
+                        margin: 8px 0;
+                        box-sizing: border-box;
+                    }
+                    input[type=button] {
+                        width: 20%;
+                        background-color: #4CAF50;
+                        color: white;
+                        padding: 14px 20px;
+                        margin: 8px 0;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+
+                    input[type=button]:hover {
+                        background-color: #45a049;
+                    }
+
+
+                </style>
+            </head>
+            <div class="wrapper">
+                <h3>List of available rooms:</h3>
+                %for r in rooms:
+                    <p>
+                    <a href="https://1-dot-asint-151811.appspot.com/init/student/{{student_id}}/{{r.id}}"> {{r.name}} </a>
+                    </p>
+                % end
+                <p></p>
+                <button id="b_search_friend" onclick="Show_form()">Search a friend</button>
+                <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
+            </div>
+            <div class="wrapper2" id="div_form">
+                <script>document.getElementById('div_form').style.display = "none";</script>
+                    <form id="form_friend">
+                        Friends' Username: <input id="text_input" type="text" name="fusername"><br>
+                        <p></p>
+                    </form>
+                    <input type="button" id="b_submit" value="Search" onclick="Search_friend()"/>
+                    <p id="friend_room"></p>
+                    <p id="debug"></p>
+            </div>
+
+
+            <script>
+                function Show_form() {
+                    document.getElementById('div_form').style.display = "table";
+                    document.getElementById("b_search_friend").style.display = "none";
+                }
+
+                function Search_friend() {
+                    var friend_username = document.getElementById("form_friend");
+                    document.getElementById("debug").innerHTML = String(friend_username.elements[0].value);
+
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = function() {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                            var response_json = xmlHttp.responseText;
+                            friend_room_name = JSON.parse(response_json);
+                            if(friend_room_name["ErrorCode"] == "NOUSERFOUND"){
+                                str = "Username provided does <b>not exist</b>";
+                            } else if(friend_room_name["ErrorCode"] == "NULL"){
+                                str = "Username provided is <b>not in a room</b>";
+                            } else{
+                                str = "Your friend is at <b>" + friend_room_name["Room"] + "</b>";
+                            }
+                            document.getElementById("friend_room").innerHTML = (str);
+                        }
+
+                    }
+                    xmlHttp.open("GET", "https://1-dot-asint-151811.appspot.com/init/student/"+String(friend_username.elements[0].value)+"/room", true);
+                    xmlHttp.send(null);
+
+                }
+            </script>
             """
 
 
@@ -156,13 +250,28 @@ def list_rooms(student_id):
 
     return template(ret, rooms=rooms, student_id=student_id)
 
+@bottle.get('/init/student/<friend_username>/room')
+def search_friend(friend_username):
+    friend = StudentS.query(StudentS.username == friend_username).fetch(1)
+    if not friend:
+        ret = json.dumps({"ErrorCode": "NOUSERFOUND", "Room": ""}, sort_keys=True)
+        #ret = "NOTFOUND"  # Friend does not exist
+    else:
+        if (friend[0].room_id is None):
+            ret = json.dumps({"ErrorCode": "NULL", "Room": ""}, sort_keys=True)
+            #ret = ""
+        else:
+            friend_room_name = RoomR.query(RoomR.id == str(friend[0].room_id).decode("utf-8")).fetch(1)[0].name
+            ret = json.dumps({"ErrorCode": "", "Room": friend_room_name}, sort_keys=True)
+            #ret = str(friend_room_name)
+    return ret
+
 @bottle.route('/init/student/<student_id>/<room_id>')
 def list_rooms(student_id, room_id):
     students = StudentS.query(StudentS.room_id==int(room_id)).fetch()
     room_name = "coisa qq"
-    q_current_room = RoomR.query(RoomR.id == str(room_id)).fetch()
-    for r in q_current_room:
-        room_name = r.name
+    q_current_room = RoomR.query(RoomR.id == str(room_id)).fetch(1)[0]
+    room_name = q_current_room.name
 
     ret = """
         <head>
@@ -173,43 +282,31 @@ def list_rooms(student_id, room_id):
         <div class="wrapper">
 			<h3>List of students in room {{room_name}}</h3>
 			%for s in students:
-                <p>{{s.name}}</p>
+                <li>{{s.username}}</li>
             % end
 			<button id="b_checkin" onclick="CheckIn()">Check In</button>
 			<button id="b_checkout" onclick="CheckOut()">Check Out</button>
             <input type="button" value="Back" onclick="window.history.back()" />
-            <p id="added">cOcO</p>
+            <p id="check"></p>
         </div>
 
         <script>
             function CheckIn() {
-                alert("Button Check Out");
-
-                document.getElementById("added").innerHTML = "Added1!"
                 var xhttp = new XMLHttpRequest();
-                document.getElementById("added").innerHTML = "Added2!"
                 xhttp.open("POST", "/init/student/{{student_id}}/{{room_id}}/in", true);
-                xhttp.setRequestHeader("Content-type", "application/json");
-                xhttp.send(JSON.stringify({'cmd':'IN'}));
-                document.getElementById("added").innerHTML = "Checked in!"
-
-                document.getElementsById("b_checkin").style.visibility="hidden";
-                document.getElementsById("b_checkout").style.visibility="visible";
+                xhttp.send();
+                document.getElementById("check").innerHTML = "You have checked in!";
+                document.getElementById("b_checkin").style.visibility="hidden";
+                document.getElementById("b_checkout").style.visibility="visible";
             }
 
             function CheckOut() {
-                alert("Button Check Out");
-
-                document.getElementById("added").innerHTML = "Added1!"
                 var xhttp = new XMLHttpRequest();
-                document.getElementById("added").innerHTML = "Added2!"
                 xhttp.open("POST", "/init/student/{{student_id}}/{{room_id}}/out", true);
-                xhttp.setRequestHeader("Content-type", "application/json");
-                xhttp.send(JSON.stringify({'cmd':'OUT'}));
-                document.getElementById("added").innerHTML = "Checked out!"
-
-                document.getElementsById("b_checkout").style.visibility="hidden";
-                document.getElementsById("b_checkin").style.visibility="visible";
+                xhttp.send();
+                document.getElementById("check").innerHTML = "You have checked out!";
+                document.getElementById("b_checkout").style.visibility="hidden";
+                document.getElementById("b_checkin").style.visibility="visible";
             }
         </script>
                 """
@@ -217,14 +314,14 @@ def list_rooms(student_id, room_id):
 
 @bottle.post('/init/student/<student_id>/<room_id>/<in_or_out>')
 def check_in_or_out(student_id, room_id, in_or_out):
-    st_list = StudentS.query(StudentS.room_id == int(room_id)).fetch()
-
-    for s in st_list:
-        s_key = s.key()
-    student = StudentS.get(s_key)
-    student.room_id = room_id
-    student.put()
-
+    student = StudentS.query(StudentS.id == int(student_id)).fetch(1)[0]
+    if in_or_out == 'out':
+        student.room_id = None
+        student.put()
+    elif in_or_out == 'in':
+        student.room_id = int(room_id)
+        student.put()
+    return
 
 @bottle.route('/init/admin/')
 def admin():
@@ -260,26 +357,21 @@ def search(room_id):
 		.wrapper {text-align: center;}
 		</style>
 		</head>
-
-
-
 		<div class="wrapper">
             <h3>{{json["type"]}} - {{json["name"]}}</h3>
 			<button onclick="add_room()">Add</button>
-            <input type="button" value="Back" onclick="window.history.back()" />
-            <input type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" value="Go to Admin Homepage" />
-            <p id="added">cOcO</p>
+            <input type="button" value="Back" onclick="window.history.back()"/>
+            <input type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" value="Go to Admin Homepage"/>
+            <p id="check"></p>
         </div>
 
         <script>
             function add_room(){
-                document.getElementById("added").innerHTML = "Added1!"
                 var xhttp = new XMLHttpRequest();
-                document.getElementById("added").innerHTML = "Added2!"
                 xhttp.open("POST", "/init/admin/search/addroom", true);
                 xhttp.setRequestHeader("Content-type", "application/json");
                 xhttp.send(JSON.stringify({'id':'{{json["id"]}}' ,'name':'{{json["name"]}}'}));
-                document.getElementById("added").innerHTML = "Added!"
+                document.getElementById("check").innerHTML = "Added! Students can now occupy room <b>{{json["name"]}}</b>."
             }
         </script>
         """
