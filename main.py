@@ -35,8 +35,19 @@ def init():
    		 <h1> </h1>
 		<head>
 		<style>
-		.wrapper {text-align: center;
-
+		.wrapper {text-align: center;}
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
 		</style>
 		</head>
 		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
@@ -47,9 +58,9 @@ def init():
                 <p class="main1">An administrator can add rooms for students to occupy and check their occupancy.</p>
                 <p class="main2">A student can occupy any of the available rooms by checking in and checking out when leaving.</p>
                 <p> </p>
-                <p class="main3"> You are:
-                <input class="button" type="button" value="Administrator" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
-                <input class="button"type="button" value="Student" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/register/';" />
+                <p class="main3">
+                <input type="button" class="button" value="Administrator" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
+                <input type="button" class="button" value="Student" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/register/';" />
                 </p>
             </div>
         </body>
@@ -86,9 +97,24 @@ def admin():
                 tr:nth-child(even) {
                     background-color: #dddddd;
                 }
+                tr:nth-child(odd) {
+                    background-color: #ffffff;
+                }
+                .button {
+                    background-color: #4CAF50;
+                    border: none;
+                    color: white;
+                    padding: 15px 32px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    margin: 4px 2px;
+                    cursor: pointer;
+                }
             </style>
         </head>
-        <body>
+       <body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
         <div id="add" class="wrapper">
             <script>document.getElementById('add').style.display = "none";</script>
             <h1>CAMPUS</h1>
@@ -97,13 +123,13 @@ def admin():
                 <a href="https://1-dot-asint-151811.appspot.com/init/admin/search/{{campus["id"]}}"> {{campus["name"]}} </a>
                 </p>
             % end
-            <input type="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
+            <input type="button" class="button" value="Back" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" />
         </div>
 
         <div id="choice" class="wrapper">
             <h1>ADMIN</h1>
-            <button id="add_room" >Add a room</button>
-            <button id="view_room" onclick="l_rooms()">Room Occupancy</button>
+            <button class="button" id="add_room" >Add a room</button>
+            <button class="button" id="view_room" onclick="l_rooms()">Room Occupancy</button>
         </div>
 
         <div id="list_rooms" class="wrapper">
@@ -111,7 +137,7 @@ def admin():
             <h3>List of available rooms</h3>
             <br>
         <p id="rooms" class="wrapper">
-            <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';">Back</button>
+            <button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';">Back</button>
         </div>
         <div id="metric_results" class="wrapper">
         </div>
@@ -233,24 +259,24 @@ def student():
 		<style>
 		.wrapper {text-align: center;}
 		input[type=text] {
-                        width: 60%;
+                        width: 30%;
                         padding: 12px 20px;
                         margin: 8px 0;
                         box-sizing: border-box;
                     }
-                    input[type=button] {
-                        width: 20%;
-                        background-color: #4CAF50;
-                        color: white;
-                        padding: 14px 20px;
-                        margin: 8px 0;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    }
-                    input[type=button]:hover {
-                        background-color: #45a049;
-                    }
+
+                .button {
+                    background-color: #4CAF50;
+                    border: none;
+                    color: white;
+                    padding: 15px 32px;
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                    font-size: 16px;
+                    margin: 4px 2px;
+                    cursor: pointer;
+                }
 		</style>
 		</head>
 		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
@@ -259,10 +285,10 @@ def student():
 			<form action="/init/student/register/" method="post">
 				Name: <input type="text" name="username"><br>
 				<br>
-				<button type="submit">Submit</button>
+				<button class="button" type="submit">Submit</button>
 			</form>
             <br>
-			<button type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
+			<button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
 		    <br>
 		</div>
 		</body>
@@ -283,8 +309,6 @@ def register():
         return ret
     else:
         number = StudentS.query().count()
-        # students = StudentS.query()
-        # s_len = students.fetch()
 
         new_id = number + 1
         s = StudentS(username=username, id=new_id)
@@ -295,31 +319,32 @@ def register():
         	<head>
         	<style>
         	.wrapper {text-align: center;}
+            .button {
+                background-color: #4CAF50;
+                border: none;
+                color: white;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                cursor: pointer;
+            }
         	</style>
         	</head>
+        	<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
         	<div class="wrapper">
         		<h3>Welcome {{username}} </h3>
+        		<br>
                 <p>Your ID is {{new_id}}. You can see the available rooms in the button below.
-        		<button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/{{new_id}}';"> See available rooms</button>
-        		<p>Under construction...</p>
-        	</div>'''
+                <br>
+        		<button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/student/{{new_id}}';"> See available rooms</button>
+        	</div>
+        	</body>
         """
-
-        # payload = {'name': 'value'}
-        # r = requests.post(url, data=payload)
-        # print "%s" %r
-
-
-        # @bottle.route('/init/student/<name>')
-        # def add(name):
-        # print "XXXXXX"
-        # m = MessageM(content = name)
-        # key = m.put()
-        # return " x"
-        # return 'Message %s added with key %s' %(name, str(key.id()))
         ret = template(temp1, username=username, new_id=new_id)
         return ret
-
 
 # STUDENTS HOMEPAGE
 @bottle.route('/init/student/<student_id>')
@@ -329,7 +354,7 @@ def list_rooms(student_id):
         student = StudentS.query(StudentS.id == int(student_id)).fetch()
         for s in student:
             student_name = s.username
-        ret = "You're logged as " + student_name
+
         rooms = RoomR.query().fetch()
         ret = """
             <h1> </h1>
@@ -366,9 +391,12 @@ def list_rooms(student_id):
                         text-align: left;
                         padding: 8px;
                     }
-                    tr:nth-child(even) {
-                        background-color: #dddddd;
-                    }
+                tr:nth-child(even) {
+                    background-color: #dddddd;
+                }
+                tr:nth-child(odd) {
+                    background-color: #ffffff;
+                }
 
                     input[type=text] {
                         width: 60%;
@@ -376,21 +404,21 @@ def list_rooms(student_id):
                         margin: 8px 0;
                         box-sizing: border-box;
                     }
-                    input[type=button] {
-                        width: 20%;
+                    .button {
                         background-color: #4CAF50;
-                        color: white;
-                        padding: 14px 20px;
-                        margin: 8px 0;
                         border: none;
-                        border-radius: 4px;
+                        color: white;
+                        padding: 15px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
                         cursor: pointer;
-                    }
-                    input[type=button]:hover {
-                        background-color: #45a049;
                     }
                 </style>
             </head>
+            <body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
             <div id="metric_results" class="wrapper">
                 <h3>List of available rooms:</h3>
                 <script>
@@ -450,8 +478,8 @@ def list_rooms(student_id):
                 <p id="error2"></p>
             </div>
             <div class="wrapper">
-                <button onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
-                <button id="b_search_friend" onclick="Show_form()">Search a friend</button>
+                <button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/';">Back</button>
+                <button class="button" id="b_search_friend" onclick="Show_form()">Search a friend</button>
             </div>
             <div class="wrapper2" id="div_form">
                 <script>document.getElementById('div_form').style.display = "none";</script>
@@ -463,7 +491,7 @@ def list_rooms(student_id):
                     <p id="friend_room"></p>
                     <p id="error"></p>
             </div>
-
+            </body>
             <script>
                 function Show_form() {
                     document.getElementById('div_form').style.display = "table";
@@ -492,15 +520,8 @@ def list_rooms(student_id):
                     xmlHttp.send(null);
                 }
 
-
-
-
             </script>
             """
-
-
-        # for r in rooms:
-        #     ret += "      " + r.name + "       " + r.id + "<br>"
     else:
         ret = """
             <p>Error! ID not found. </p>
@@ -549,11 +570,27 @@ def check_room(student_id, room_id):
                 text-align: left;
                 padding: 8px;
             }
-            tr:nth-child(even) {
-                background-color: #dddddd;
-            }
+                tr:nth-child(even) {
+                    background-color: #dddddd;
+                }
+                tr:nth-child(odd) {
+                    background-color: #ffffff;
+                }
+                                .button {
+                        background-color: #4CAF50;
+                        border: none;
+                        color: white;
+                        padding: 15px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
+                        cursor: pointer;
+                    }
 		</style>
 		</head>
+		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
         <div id="metric_results" class="wrapper">
             <h3>List of students in room {{room_name}}</h3>
             <p id="error"></p>
@@ -611,12 +648,12 @@ def check_room(student_id, room_id):
 
             </script>
 
-
-			<button id="b_checkin" onclick="CheckIn()">Check In</button>
-			<button id="b_checkout" onclick="CheckOut()">Check Out</button>
-            <input type="button" value="Back" onclick="window.history.back()"/>
+			<button class="button" id="b_checkin" onclick="CheckIn()">Check In</button>
+			<button class="button" id="b_checkout" onclick="CheckOut()">Check Out</button>
+            <input type="button" class="button" value="Back" onclick="window.history.back()"/>
             <p id="check"></p>
         </div>
+        </body>
         <script>
             function CheckIn() {
                 var xhttp = new XMLHttpRequest();
@@ -634,9 +671,6 @@ def check_room(student_id, room_id):
                 document.getElementById("b_checkout").style.visibility="hidden";
                 document.getElementById("b_checkin").style.visibility="visible";
             }
-
-
-
         </script>
     """
     return template(ret, student_id=student_id, room_id=room_id, students=students, room_name=room_name)
@@ -686,15 +720,29 @@ def search(room_id):
 		<head>
 		<style>
 		.wrapper {text-align: center;}
+                                .button {
+                        background-color: #4CAF50;
+                        border: none;
+                        color: white;
+                        padding: 15px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
+                        cursor: pointer;
+                    }
 		</style>
 		</head>
+		<body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
 		<div class="wrapper">
             <h3>{{json["type"]}} - {{json["name"]}}</h3>
-			<button onclick="add_room()">Add</button>
-            <input type="button" value="Back" onclick="window.history.back()"/>
-            <input type="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" value="Go to Admin Homepage"/>
+			<button class="button" onclick="add_room()">Add</button>
+            <input type="button" class="button" value="Back" onclick="window.history.back()"/>
+            <input type="button" class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init/admin/';" value="Go to Admin Homepage"/>
             <p id="check"></p>
         </div>
+        </body>
         <script>
             function add_room(){
                 var xhttp = new XMLHttpRequest();
@@ -708,15 +756,36 @@ def search(room_id):
 
     else:
         temp = """
+        <head>
+        <style>
+        .wrapper {text-align: center;}
+        .button {
+                        background-color: #4CAF50;
+                        border: none;
+                        color: white;
+                        padding: 15px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
+                        cursor: pointer;
+                    }
+        </style>
+        </head>
+        <body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
+        <div class="wrapper">
         <h1>SELECT {{json["containedSpaces"][0]["type"]}} IN {{json["name"]}} {{json["type"]}}</h1>
         %for room in json["containedSpaces"]:
-            <li>
+            <p>
             <a href="https://1-dot-asint-151811.appspot.com/init/admin/search/{{room["id"]}}">
             {{room["name"]}}
             </a>
-            </li>
+            </p>
         % end
-        <input type="button" value="Back" onclick="window.history.back()" />
+        <input type="button" class="button" value="Back" onclick="window.history.back()" />
+        </div>
+        </body>
     """
 
     return template(temp, json=response_json)
@@ -765,9 +834,24 @@ def room_occupation(room_id):
                 tr:nth-child(even) {
                     background-color: #dddddd;
                 }
+                tr:nth-child(odd) {
+                    background-color: #ffffff;
+                }
+                        .button {
+                        background-color: #4CAF50;
+                        border: none;
+                        color: white;
+                        padding: 15px 32px;
+                        text-align: center;
+                        text-decoration: none;
+                        display: inline-block;
+                        font-size: 16px;
+                        margin: 4px 2px;
+                        cursor: pointer;
+                    }
             </style>
         </head>
-
+        <body background="http://www.seim.cl/wp-content/uploads/6793522-free-office-wallpaper.jpg">
         <div class="wrapper">
 			<h3>List of students in room {{room_name}}</h3>
 			 <br>
@@ -798,8 +882,9 @@ def room_occupation(room_id):
 
         </div>
         <div class="wrapper">
-        <input type="button" value="Back" onclick="window.history.back()" />
+        <input type="button" class="button" value="Back" onclick="window.history.back()" />
         </div>
+        </body>
     """
     return template(ret, room_id=room_id, students=students, room_name=room_name)
 
@@ -817,25 +902,6 @@ def showall():
     for r in rooms:
         ret += str(r.key.id()) + "    " + r.name + "       " + r.id + "<br>"
     return ret
-
-
-@bottle.route('/showsome/<start:int>/<end:int>')
-def showsome(start, end):
-    ret = ""
-    msgs = MessageM.query()
-    for m in msgs.fetch(offset=start, limit=end - start):
-        ret += str(m.key.id()) + "    " + m.content + "     " + str(m.date) + "<br>"
-    return ret
-
-
-@bottle.route('/showexact/<string>')
-def showexact(string):
-    ret = ""
-    msgs = MessageM.query(MessageM.content == string)
-    for m in msgs:
-        ret += str(m.key.id()) + "    " + m.content + "     " + str(m.date) + "<br>"
-    return ret
-
 
 # Define an handler for 404 errors.
 @bottle.error(404)
