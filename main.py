@@ -880,12 +880,17 @@ def add_room():
     data = request.json
     # response = urllib2.urlopen('https://asint-156018.appspot.com/init/admin/search/<room_id>' + room_id)
     # response_json = json.loads(response.read())
-
-    r = RoomR(name=data['name'], id=data['id'])
-    r.put()
-    temp1 = """
-    		<p> JSON:{{data}},Name:{{data["name"]}}, ID:{{data["id"]}}</p>
-    		"""
+    res = RoomR.query(RoomR.id==data['id']).count()
+    if res is 0:
+        r = RoomR(name=data['name'], id=data['id'])
+        r.put()
+        temp1 = """
+                <p> JSON:{{data}},Name:{{data["name"]}}, ID:{{data["id"]}}</p>
+                """
+    else:
+        temp1 = """
+                <p> Error: room already in list!</p>
+                """
     ret = template(temp1, data=data)
 
     return ret
