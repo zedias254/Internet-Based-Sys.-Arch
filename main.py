@@ -442,7 +442,7 @@ def user_home(user_id):
                     <p id="error2"></p>
                 </div>
                 <div class="wrapper">
-                    <button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/';">Back</button>
+                    <button class="button" onclick="location.href='https://1-dot-asint-151811.appspot.com/init';">Back</button>
                     <button class="button" id="b_search_friend" onclick="Show_form()">Search a friend</button>
                 </div>
                 <div class="wrapper2" id="div_form">
@@ -655,20 +655,44 @@ def check_room(user_id, room_id):
         </body>
         <script>
             function CheckIn() {
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("POST", "/user/{{user_id}}/{{room_id}}/in", true);
-                xhttp.send();
-                document.getElementById("check").innerHTML = "You have <b>checked in!</b>";
-                document.getElementById("b_checkin").style.visibility="hidden";
-                document.getElementById("b_checkout").style.visibility="visible";
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function() {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                        var response_json = xmlHttp.responseText;
+                        parsed_response = JSON.parse(response_json);
+                        if(parsed_response.hasOwnProperty('ErrorCode')){
+                            document.getElementById("check").innerHTML = parsed_response["ErrorCode"];
+                        }else{
+                            document.getElementById("check").innerHTML = "You have <b>checked in!</b>";
+                            document.getElementById("b_checkin").style.visibility="hidden";
+                            document.getElementById("b_checkout").style.visibility="visible";
+                        }
+                    }
+                }
+
+                xmlHttp.open("POST", "/user/{{user_id}}/{{room_id}}/in", true);
+                xmlHttp.send();
+
             }
             function CheckOut() {
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("POST", "/user/{{user_id}}/{{room_id}}/out", true);
-                xhttp.send();
-                document.getElementById("check").innerHTML = "You have checked out!";
-                document.getElementById("b_checkout").style.visibility="hidden";
-                document.getElementById("b_checkin").style.visibility="visible";
+                var xmlHttp = new XMLHttpRequest();
+                 xmlHttp.onreadystatechange = function() {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+                            var response_json = xmlHttp.responseText;
+                            parsed_response = JSON.parse(response_json);
+                            if (parsed_response.hasOwnProperty('ErrorCode')){
+                                document.getElementById("check").innerHTML = parsed_response["ErrorCode"];
+                            }else{
+                                document.getElementById("b_checkout").style.visibility="hidden";
+                                document.getElementById("b_checkin").style.visibility="visible";
+                                document.getElementById("check").innerHTML = "You have checked out!";
+                            }
+                        }
+                }
+                xmlHttp.open("POST", "/user/{{user_id}}/{{room_id}}/out", true);
+                xmlHttp.send();
+
+
             }
         </script>
     """
@@ -780,15 +804,24 @@ def check_in_or_out(user_id, room_id, in_or_out):
     student = StudentS.query(StudentS.id == int(user_id)).fetch(1)[0]
     if  int(user_id) > 0:
         if in_or_out == 'out':
-            if room_id == student.room_id:
-                student.room_id = None
-                student.put()
+            if student.room_id == room_id:
+                if room_id == student.room_id:
+                    student.room_id = None
+                    student.put()
+                    ret = {"Status": "OK"}
+            else:
+                ret = {"ErrorCode": "You cannot check out from a room you're haven't checked in!"}
         elif in_or_out == 'in':
-            student.room_id = room_id
-            student.put()
-        return "OK"
+            if student.room_id == room_id:
+                ret = {"ErrorCode": "You are already in this room!"}
+            else:
+                student.room_id = room_id
+                student.put()
+                ret = {"Status": "OK"}
     else:
-        return "USER ID NOT VALID!"
+        ret = {"ErrorCode": "USERID is not valid!"}
+
+    return json.dumps(ret, sort_keys=True)
 
 # FOR ADMIN TO SEARCH FOR ROOMS IN TECNICO (W/ FENIX API)
 @bottle.get('/user/0/search/<room_id>')
