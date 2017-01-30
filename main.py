@@ -801,8 +801,8 @@ def list_students(user_id,room_id):
 # CHECK IN | CHECK OUT METHOD
 @bottle.post('/user/<user_id>/<room_id>/<in_or_out>')
 def check_in_or_out(user_id, room_id, in_or_out):
-    student = StudentS.query(StudentS.id == int(user_id)).fetch(1)[0]
     if  int(user_id) > 0:
+        student = StudentS.query(StudentS.id == int(user_id)).fetch(1)[0]
         if in_or_out == 'out':
             if student.room_id == room_id:
                 if room_id == student.room_id:
